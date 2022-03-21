@@ -1,0 +1,53 @@
+---
+title: 'Data 3402:  HW 1'
+author: "Keoshia Grigsby"
+output: html_document
+---
+
+# New problem
+Suppose:  $X \sim Norm(6, 2)$.
+
+
+# Using R to get the answer
+
+I will save the x, mean, and standard deviation in different variables. After that I will compute the probability using pnorm.
+```{r}
+x <- 10
+mu <- 6
+sd <- 2
+ans <- pnorm(x, mu, sd, lower.tail = FALSE)
+ans
+round(ans,2)
+```
+This answer says that there is very little chance that x is greater than 10 while $Norm(6,2)$
+
+# Making a plot in R to tell the story
+ 
+```{r}
+n <- 10000
+sample <- rnorm(n, mu, sd)
+hist(sample)
+```
+
+# Impersonating a mathematician
+
+Suppose:   $X \sim Norm(6, 2)$.
+
+
+Find:  $P(X > 10)$.
+
+
+Z-score Equation  $(x - mu) /\sigma$.
+
+$(10- 6) / 2 $.
+
+$ = 2$.
+
+Our calculated z-score was 2 standard deviations above the mean
+
+Now we have $P(Z < 2)$.
+
+If we check a z=table for the score we get roughly around .02
+
+
+

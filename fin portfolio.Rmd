@@ -1,0 +1,98 @@
+---
+title: "Fin Portfolio"
+author: "Keoshia Grigsby"
+date: "March 9, 2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+# AIG Portfolio 
+
+
+In 1919, Cornelius Vander Starr stepped off a steamship in Shanghai determined to make his mark in the world. Working from a two-room office, he established American Asiatic Underwriters, an insurance agency to which we trace our roots. Starr believed in making the world a better place and with other early company pioneers, his organization grew across the world. Today, AIG is a global insurance company with operations in more than 80 countries and jurisdictions. In 2005 Martin J. Sullivan is appointed AIG President and CEO. In 2008 AIG Chairman Robert Willumstad becomes CEO. After the financial crisis hits the U.S., the government provides support to AIG, and Edward M. Liddy becomes AIG Chairman and CEO. In 2009 Robert H. Benmosche is named AIG President and CEO. In 2014 Peter D. Hancock is named AIG President and CEO.  In 2017 Brian Duperreault is named AIG President & CEO. In 2020 Peter Zaffino appointed President of AIG. March 2021 he took on the additional role of Chief Executive Officer and as of January 2022 became Chairman of the Board of Directors. 
+The AIG mission statement is to provide power generation and procurement solutions at a price the competitors cannot match without sacrificing high standards of service, and our clients agree that we deliver on that statement.
+AIG believes a commitment to sustainability helps future-proof communities by addressing societal and environmental factors, while enabling economic progress. Building on our expertise and capabilities in managing risks of many kinds, we can facilitate, design and drive innovative solutions to help clients and partners adapt to our changing world. Our four sustainability priorities align with our core business strategy and include community resilience, financial security, sustainable investing and sustainable operations. 
+AIG Life & Retirement consists of four operating segments: Individual Retirement, Group Retirement, Life Insurance and Institutional Markets. It includes the following major U.S. life insurance companies: American General Life Insurance Company; The Variable Annuity Life Insurance Company; and The United States Life Insurance Company in the City of New York.
+
+
+
+```{r}
+#install.packages("xml2")
+#install.packages("rvest")
+#install.packages("tidyverse")
+#install.packages("dplyr")
+library(tidyverse)
+library(dplyr)
+library(xml2)
+library(rvest)
+url <- "https://www.macrotrends.net/stocks/charts/AIG/american/revenue"
+url2 <- "https://www.macrotrends.net/stocks/charts/AIG/american/net-income"
+page <- read_html(url) #Creates an html document from URL
+page2 <- read_html(url2)
+table <- html_table(page, fill = TRUE)#Parses tables into data frames
+table2 <- html_table(page2, fill = TRUE)
+
+```
+
+```{r}
+q_revenue_aig <- data.frame(table[2])
+q_revenue_aig <- q_revenue_aig %>% rename("Date" = "American.Quarterly.Revenue.Millions.of.US...","Quarterly.Revenue" = "American.Quarterly.Revenue.Millions.of.US....1")
+
+q_revenue_aig$Quarterly.Revenue <- as.numeric(gsub("[\\$,]", "", q_revenue_aig$Quarterly.Revenue))
+q_revenue_aig$Date <- as.Date(q_revenue_aig$Date)
+write_csv2(q_revenue_aig, "q_revenue_aig.csv")
+```
+
+
+```{r}
+
+plot(x = q_revenue_aig$Date, y = q_revenue_aig$Quarterly.Revenue, type='o', col="blue")
+
+ylim = c(0, max(q_revenue_aig$Quarterly.Revenue))
+plot(q_revenue_aig$Date, q_revenue_aig$Quarterly.Revenue, type='l', ylim=ylim, col="red", xlab='Date', ylab='Revenue', lwd=1,frame.plot = FALSE)
+
+```
+
+
+
+
+```{r}
+q_net_income_aig <- data.frame(table2[2])
+q_net_income_aig <- q_net_income_aig %>% rename("Date" = "American.Quarterly.Net.Income.Millions.of.US...", "Quarterly.Income" = "American.Quarterly.Net.Income.Millions.of.US....1")
+
+q_net_income_aig$Quarterly.Income <- as.numeric(gsub("[\\$,]", "", q_net_income_aig$Quarterly.Income))
+q_net_income_aig$Date <- as.Date(q_net_income_aig$Date)
+write_csv(q_net_income_aig, "q_net_income_aig.csv")
+
+
+```
+
+```{r}
+
+ylim = c(min(q_net_income_aig$Quarterly.Income), max(q_net_income_aig$Quarterly.Income))
+plot(q_net_income_aig$Date, q_net_income_aig$Quarterly.Income, type='l', ylim=ylim, col="blue", xlab='Date', ylab='Net Income', lwd=1,frame.plot = FALSE)
+abline(h = 0, col = "red")
+```
+# Stock Prices 
+```{r}
+#download csv from yahoo
+AIG_stock <- as.data.frame(read_csv("AIG_stock.csv"))
+
+summary(AIG_stock)
+
+```
+
+```{r}
+
+ylim = c(min(AIG_stock$High), max(AIG_stock$High))
+plot(AIG_stock$Date, AIG_stock$High, type='l', ylim=ylim, col="blue", xlab='Date', ylab='Price ', lwd=1,frame.plot = FALSE)
+abline(h = 0, col = "red")
+```
+
+
+websites for citing 
+
+https://www.aig.com/about-us/sustainability

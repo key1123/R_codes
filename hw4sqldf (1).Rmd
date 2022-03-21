@@ -1,0 +1,176 @@
+---
+title: 'hw4: SQL and sqldf'
+author: 'Keoshia Grigsby'
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r }
+#install.packages("palmerpenguins")
+#install.packages('dplyr')
+#install.packages('magrittr')
+#install.packages('sqldf')
+
+rm(penguins)
+library(palmerpenguins)  # for data
+library(dplyr)
+library(magrittr) # for the pipe
+library(sqldf) 
+
+penguins$species <- as.character(penguins$species)  # converting factors to character
+penguins$island <- as.character(penguins$island)
+penguins$sex <- as.character(penguins$sex)
+# modify penguins by removing rows that contain NA
+penguins <- na.omit(penguins) 
+```
+
+### Instructions
+
+Use `sqldf()` to extract the following subsets.  Most problems include questions.  Answer these with complete sentences in your markdown text (not in a code chunk).  This is an opportunity to use inline code references in your notebook.  Use *italics* or **bold** to make your sentences stand out.  
+
+
+### Questions 
+Each question is worth 10 points.  Questions are from hw3 and quiz1.  The `penguins` data.frame used here is different from what we used in those assignments, so the solutions may not match exactly.  
+
+(@) Extract the set of penguins from Biscoe Island sampled after 2007.  How many penguins are in this set?
+
+```{r}
+BIS_2008_9 <- 'Select * from penguins where island = "Biscoe" AND year > 2007'
+sqldf(BIS_2008_9)
+
+qstr <- 'Select count(*) as num_penguins from penguins where island = "Biscoe" AND year > 2007'
+sqldf(qstr)
+```
+
+There were 120 penguins from Biscoe sampled after 2007.
+
+
+(@) Extract the bill-related variables for female Chinstrap penguins sampled in 2008.  How many penguins are in this set?
+
+```{r}
+bill_var_2008 <- 'Select bill_length_mm , bill_depth_mm from penguins where year = 2008 '
+sqldf(bill_var_2008)
+
+
+qstr <- 'Select count(*) as num_penguins from penguins where year = 2008 '
+sqldf(qstr)
+```
+
+There were 113 female Chinstrap penguins sampled in 2008
+
+
+(@) Extract the flipper-related variables for male penguins from Dream Island.  How many penguins are in this set?
+
+```{r}
+filp_var_dre_male <- 'Select island, flipper_length_mm from penguins where island = "Dream" AND sex = "male"'
+sqldf(filp_var_dre_male)
+qstr <- 'Select count(*) as num_penguins from penguins where island = "Dream" AND sex = "male"'
+sqldf(qstr)
+
+```
+There were 62 male penguins from Dream Island that we extracted flipper related variables for.
+
+
+(@) Extract the top ten male penguins based on body mass. 
+
+```{r}
+
+top10_male_mass <- 'Select species, island, body_mass_g from penguins order by body_mass_g desc limit 10'
+
+
+sqldf(top10_male_mass)
+``` 
+
+
+(@) Extract the the top twenty Chinstrap penguins based on bill volume.  
+
+first we need to set up the data for bill volume 
+```{r}
+penguins <- sqldf('Select*, (.5*bill_depth_mm) as r from penguins')
+penguins <- sqldf('Select *, sqrt( (bill_length_mm * bill_length_mm) - (r * r) ) as h from penguins')
+penguins <- sqldf('Select*, (3.14159265 *(r*r)*h) as bill_volume from penguins')
+```
+
+now we will extract the information
+
+```{r}
+#query
+qstr  <- 'Select * from penguins WHERE species = "Chinstrap" order by bill_volume desc limit 20'
+
+sqldf(qstr)
+```
+
+
+(@) Extract the columns species, island, year, sex, and body_mass_g for female penguins sampled before 2009 and with body mass more than 3200 g.  Display the result.  How many records (rows) are in this data.frame? 
+
+```{r}
+fm_2009_bdymss_G3200 <- 'Select species, island, year, sex, body_mass_g from penguins where sex = "female" AND year < 2009 and body_mass_g > 3200'
+sqldf(fm_2009_bdymss_G3200)
+
+qstr <- 'Select count(*) as num_penguins from penguins where sex = "female" AND year < 2009 and body_mass_g > 3200'
+sqldf(qstr)
+
+```
+There were 91 female penguins sampled before 2009 and with body mass more than 3200 g.
+
+
+(@) Based on body mass, which island has the largest female penguin?  Which island has the smallest male penguin?
+
+```{r}
+largest_female <- 'Select * from penguins WHERE sex = "female" order by body_mass_g desc limit 1'
+sqldf(largest_female)
+smallest_male <- 'Select * from penguins WHERE sex = "male" order by body_mass_g limit 1'
+sqldf(smallest_male)
+```
+
+Biscoe has the largest female penguin and Dream has the smallest male penguin.
+
+
+(@) Compute the maximum bill length for male penguins grouped by island, species, and year.  How many records (rows) are in this data.frame?  How many records would there be if every species was found on every island? 
+
+```{r}
+
+max_bill_group <- 'Select island, species, year, max(bill_length_mm) as max_bill_legnth 
+from penguins group by island, species, year'
+sqldf(max_bill_group)
+
+
+qstr <- 'Select count(*) as num_penguins from penguins  group by island, species, year'
+sqldf(qstr)
+
+```
+
+There are 15 rows in this data frame. If every species was found on every island we would have 27 rows
+
+
+(@) Make a data.frame called `top5Adelie` containing the top 5 Adelie penguins based on bill length.  Do the same thing for the bottom 5.  Display both data.frames.  
+
+```{r}
+top5Adelie <- penguins %>% filter(species == 'Adelie') %>% arrange(desc(bill_length_mm)) %>% head(5)
+top5Adelie
+bottom5Adelie <- penguins %>% filter(species == 'Adelie') %>% arrange(bill_length_mm) %>% head(5)
+bottom5Adelie
+```
+
+
+(@) Extract the set of penguins from species Gentoo or Chinstrap and display the result.  How many penguins are in this set?  How many of these penguins are Chinstraps? 
+
+```{r}
+gen_or_chin <- 'Select * from penguins WHERE species = "Gentoo" or species = "Chinstrap"'
+sqldf(gen_or_chin)
+
+#counting total
+qstr <- 'Select count(*) as num_penguins from penguins WHERE species = "Gentoo" or species = "Chinstrap"'
+sqldf(qstr)
+
+#counting chins
+qstr <- 'Select species, count(*) as num_penguins from penguins WHERE species = "Gentoo" or species = "Chinstrap" group by species'
+sqldf(qstr)
+```
+
+
+There are 187 total penguins in this dataset, of which 68 are chinstrap penguins.
+
+

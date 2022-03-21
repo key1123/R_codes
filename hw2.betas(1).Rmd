@@ -1,0 +1,193 @@
+---
+title: 'hw2: the beta family of pdf''s'
+author: "Keoishia Grigsby"
+output:
+  html_notebook: default
+  pdf_document: default
+---
+
+# Part 1
+Write your own version of `dbeta()` using the beta pdf formula given above. Call your function `mydbeta()`.  Use three arguments: `x`, `shape1` for $\alpha$, and `shape2` for $\beta$.  Don't bother with `ncp` or `log`. 
+```{r}
+mydbeta <- function(x, shape1, shape2){
+  #dbeta(x, shape1, shape2) 
+  ((1/beta(shape1,shape2)) * (x**(shape1 - 1)) * ((1 - x)**(shape2 - 1)))
+}
+```
+
+Test `mydbeta()`  by comparing its output to `dbeta()` output.  Choose 5 sets of values for $x, \alpha$ and $\beta$ and make a data.frame to summarize your results.  
+Plot the pdf's of your five test cases together on the same plot.    
+
+```{r}
+x <- runif(5, 0, 1)
+shape1 <- runif(5, 0, 100)
+shape2 <- runif(5, 0, 100)
+
+
+mydata <- cbind.data.frame(x, shape1, shape2)
+mydata['mydbeta'] <- mydbeta(mydata[, 1], mydata[, 2], mydata[, 3])
+mydata['dbeta'] <- dbeta(mydata[, 1], mydata[, 2], mydata[, 3])
+mydata
+```
+
+
+# Part 2
+Use your function `mydbeta()` for these questions. 
+Experiment with different values of $\alpha$ and $\beta$ and plot the resulting beta pdf's to answer the following questions. The parameters $\alpha$ and $\beta$ have to be greater than zero. Otherwise there's no restriction.  
+
+(@) Find values for $\alpha$ and $\beta$ which produce a pdf which is uniform (flat) on [0,1].    _______________________ Make a plot of this beta density. 
+
+* The values of alpha and beta that make a uniform distribution are (1, 1)
+```{r}
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = 1, shape2 = 1) # flat
+data1 <- cbind.data.frame(xvec, yvec)
+data1
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(0,2))
+title('Beta distribution with uniform distribution')
+```
+
+
+(@) What relationship between $\alpha$ and $\beta$ produces a symmetric pdf? ____________________________ Make a plot with three examples of such a pdf. 
+* When alpha and beta are equal their pdf is symmertric 
+```{r}
+# first line
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = 50, shape2 = 50)
+#second line
+xvec2 <- seq(0, 1, by = .01)
+yvec2 <- mydbeta(xvec, shape1 = 5, shape2 = 5)
+#third line
+xvec3 <- seq(0, 1, by = .01)
+yvec3 <- mydbeta(xvec, shape1 = 10, shape2 = 10)
+
+
+mydata2 <- cbind.data.frame(xvec, yvec, yvec2, xvec3, yvec3)
+mydata2
+plot(xvec, yvec, type='l', col = '6', lwd = 'k', xlim=c(0,1), ylim = c(-1,10))
+lines(xvec2, yvec2, col = 9)
+lines(xvec3, yvec3, col = 27)
+title('Beta distribution with symmertric distribution')
+```
+
+
+(@) What relationship between $\alpha$ and $\beta$ produces a pdf which is skewed to the right? _________________________ Make a plot with three examples of such a pdf.  
+
+* when beta is greater than alpha the graph is skewed to the right
+```{r}
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = 30, shape2 = 70)
+
+xvec2 <- seq(0, 1, by = .01)
+yvec2 <- mydbeta(xvec, shape1 = 3, shape2 = 7)
+
+xvec3 <- seq(0, 1, by = .01)
+yvec3 <- mydbeta(xvec, shape1 = 3, shape2 = 17)
+
+mydata3 <- cbind.data.frame(xvec, yvec, xvec2, yvec2, xvec3, yvec3)
+mydata3
+
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(-1,10))
+lines(xvec2, yvec2, col = 9)
+lines(xvec3, yvec3, col = 27)
+title('Beta Distribution with Right Skwedness')
+```
+
+(@) What values for $\alpha$ and $\beta$ produce a triangular pdf?____________________________  Make a plot with two examples of such a pdf. 
+* for this one I could ony guess when x only has 3 values or if the x values goi by .05
+```{r}
+# first line
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = 1.000001, shape2 = 2.000001)
+
+#second line
+xvec2 <- seq(0, 1, by = .01)
+yvec2 <- mydbeta(xvec2, shape1 = 2.000001, shape2 = 1.000001)
+
+#saved df of data
+mydata4 <- cbind.data.frame(xvec, yvec, xvec2, yvec2)
+mydata4
+
+#plots of lines
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(0,2))
+lines(xvec2, yvec2, col = 3)
+title('Beta distribution with triangular peak')
+```
+
+
+(@) We say **spike** to describe a function where most values are close to zero except for a tall skinny peak.  How should I choose $\alpha$ and $\beta$ to get a beta pdf with a spike at x = .5, and close to 0 everywhere else?  ____________________________  Make a plot with two examples of such a pdf. 
+
+* a very large alpha and beta should be schosen if we want to see a spike
+```{r}
+xvec <- seq(0, 1, by = .00001)
+yvec <- mydbeta(xvec, shape1 =500 , shape2 = 500 )
+
+xvec2 <- seq(0, 1, by = .00001)
+yvec2 <- mydbeta(xvec, shape1 = 250, shape2 = 250)
+
+mydata5 <- cbind.data.frame(xvec, yvec, xvec2, yvec2)
+mydata5
+
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(-1,10))
+lines(xvec2, yvec2, col = 9)
+title('Beta Distribution with Spike at x =0.5')
+```
+
+(@) Suppose I want spikes near x = 0 and x = 1 with density close to 0 in between? ____________________________  Make a plot with three examples of such a pdf.
+```{r}
+#first line
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = .005 , shape2 =.005)
+#second line
+xvec2 <- seq(0, 1, by = .001)
+yvec2 <- mydbeta(xvec2, shape1 = .08, shape2 = .08)
+#third linbe
+xvec3 <- seq(0, 1, by = .001)
+yvec3 <- mydbeta(xvec3, shape1 = .001, shape2 = .001)
+#plots
+
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(-1,10))
+
+lines(xvec2, yvec2,  col = 4)
+lines(xvec3, yvec3,  col = 39)
+
+#data
+mydata5 <- cbind.data.frame(xvec, yvec, xvec2, yvec2)
+mydata5
+
+title('Beta Distribution with Spike at x = 0 and x =5 ')
+```
+
+(@) What values for $\alpha$ and $\beta$ produce a pdf which is bell-shaped?  ____________________________ It should look close to normal.   Make a plot with at least one example of such a pdf. 
+* (3, 3) and (2, 2) for alpha and beta produce a bell-shape
+```{r}
+#bell-shaped lkine
+xvec <- seq(0, 1, by = .01)
+yvec <- mydbeta(xvec, shape1 = 3, shape2 = 3)
+
+
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(0,2))
+
+mydata6 <- cbind.data.frame(xvec, yvec)
+mydata6
+
+title('Beta Distribution with "Bell-Shape"')
+```
+
+
+(@) Find values for $\alpha$ and $\beta$  which produce a pdf like a concave bowl. (Concave means curved like a frown.  Curved like a smile is convex.)  ____________________________  Make a plot with three examples of such a pdf. 
+* when alpha and beta are equal and very small the pdf shape is convex
+```{r}
+xvec <- seq(0, 1, by = .001)
+yvec <- mydbeta(xvec, shape1 = .001, shape2 = .001)
+
+xvec2 <- seq(0, 1, by = .001)
+yvec2 <- mydbeta(xvec, shape1 = .01, shape2 = .01)
+plot(xvec, yvec, type='l', col = 6, lwd = 'k', xlim=c(0,1), ylim = c(0,3))
+
+lines(xvec2, yvec2,  col = 4)
+
+
+title('Beta Distribution with convex')
+
+```

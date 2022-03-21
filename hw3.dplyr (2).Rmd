@@ -1,0 +1,130 @@
+---
+title: 'hw3:  using dplyr'
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+## Part 1
+
+For the first part of this assignment we are asked to import the
+libraries so that is what we will do.
+
+```{r}
+rm(penguins)
+#install.packages('tidyverse') # run this once to download package to your machine
+#install.packages('palmerpenguins') # run this once to download package to your machine
+library(tidyverse) # run this everytime to load code from package to your current R session
+library(palmerpenguins, quietly=TRUE)
+```
+
+The data set palmerpenguins provides overview of penguins from 3 different islands Torgersen, Biscoe, and Dream.
+
+These penguins were analyzed over the course of the years 2007, 2008, and 2009. Altogether three species of penguins were recorded.
+
+To find these variables we just used the unique function on the column of choice. `unique(dataframe)`
+
+The code should look like this `r unique(penguins['species'])`
+
+We are given the variables bill length, bill depth, flipper length which
+are all measured in millimeters. We are also given the body mass,
+weighed in grams. We are also given the variable sex describing two genders. 
+The variables island, species and sex were all set as factors so we will set
+them as characters in the next code chunks. We have different ways to
+count NA values for a data frame we can use the
+`filter_all(any_vars(is.na(.)))` on the dataframe or we can use
+
+```{r}
+colSums(is.na(penguins))
+```
+
+These penguins came from a certain part of Antarctica, so we would
+assume prior to analyzing any of the number that some measurements may
+be extremely similar between species. 
+
+![Penguins islands map. (3 zoomed out images of antritica) (2 photos of each species)](The-marine-ecosystem-west-of-the-Antarctic-Peninsula-a-extends-from-northern.png)
+
+
+
+# Part 2
+
+Now we will ad the columns continent, obs_age (for observed age), chest width, flipper length, and bill volume to the data frame.
+
+First I use lubridate to add to column year without hard coding 2022.
+and we also add the continent Antarctica for all of the columns. So
+after running this line of code we will have added the continent and
+data age to the dataframe.
+
+```{r}
+
+library(lubridate)
+
+penguins <- penguins %>% 
+  mutate(continent = 'Antarctica', obs_age = year(Sys.Date()) - year) %>% 
+  select(island, continent, species, sex, year, obs_age, everything()) 
+penguins
+```
+
+The next columns to add will be the chest width. We are assuming the
+chect width of EVERY penguin is 80% of its flipper length. Add a column
+for chest width measured in mm. Then add a column for flipper span = the
+width of each penguin from flipper tip to flipper tip.
+
+```{r}
+penguins <- mutate(penguins, chest_width_mm = .80 * flipper_length_mm, 
+                   flipper_span_mm = 2*flipper_length_mm + chest_width_mm)
+
+
+```
+
+For the last column we added in class we will compute the bill volume.
+For this part of the assignment is was assumed that the bill was shaped
+like a cone. the equation we will use for the bill volume follows
+$$ V = \frac{1}{3}\pi r^2 h $$ we will have to use bill depth to find r
+we then use bill legnth to find h From the sketch that Max drew we can
+see that: $$ r = .5 * bill\_depth\_mm$$ and using the Pythagorean
+theorem we get $$ h = \sqrt{bill\_length\_mm^2 - r^2}$$
+
+```{r}
+# intermediate results: 
+r = .5 * penguins$bill_depth_mm
+h = sqrt(penguins$bill_length_mm^2 - r^2)
+# now ready for mutate()
+penguins <- penguins %>% mutate(bill_volume = round(1/3 * pi * r^2 * h,1))
+```
+# Part 3
+
+### a. penguins from Biscoe Island sampled after 2007 (all columns? YES because it doesn't give specifics)
+
+```{r}
+penguins %>% filter(island == 'Biscoe', year > 2007)
+```
+There were 124 penguins sampled from Biscoe island after 2007.
+
+### a. bill-related variables for female Chinstrap penguins sampled in 2008
+
+```{r}
+penguins %>% filter(sex == 'female',species == 'Chinstrap', year == 2008 )  %>% select(contains("bill")) 
+```
+
+There were 9 female Chinstrap penguins sampled in 2008. Above is the data for their bill legnth, width, and volume.
+### a. flipper-related variables for male penguins from Dream Island
+
+```{r}
+penguins %>% filter(sex == 'male',island == 'Dream')  %>% select(starts_with("flipper")) 
+
+```
+
+### a. the top ten male penguins based on body mass
+
+```{r}
+penguins %>% filter(sex == 'male')  %>% arrange(desc(body_mass_g)) %>% head(10)
+
+```
+
+### a. the top twenty Chinstrap penguins based on bill volume
+
+```{r}
+penguins %>% filter(species == 'Chinstrap')  %>% arrange(desc(bill_volume)) %>% head(20)
+
+```
